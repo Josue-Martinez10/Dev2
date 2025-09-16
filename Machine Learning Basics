@@ -1,0 +1,298 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyOkaQOaYzq8LC4nNpUEn/Xk",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Josue-Martinez10/Dev2/blob/main/Machine%20Learning%20Basics\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 8,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "UE1BbJasqt3_",
+        "outputId": "1d2e7279-9126-44fb-ebe0-876156adb86b"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Predicted price for a 1,655 sq ft house in the zipcode location 95121: $1,356,194.06\n",
+            "\n",
+            "Model Coefficients:\n",
+            "location_94536: 222673.05\n",
+            "location_95050: -93339.54\n",
+            "location_95121: -129333.51\n",
+            "square_footage: -632.48\n"
+          ]
+        }
+      ],
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.linear_model import LinearRegression\n",
+        "from sklearn.preprocessing import OneHotEncoder\n",
+        "from sklearn.compose import ColumnTransformer\n",
+        "from sklearn.pipeline import Pipeline\n",
+        "\n",
+        "#https://www.zillow.com/san-jose-ca-95121/?utm_medium=cpc&utm_source=google&utm_content=12581678795|124921362372|kwd-298676009707|507901519868|&semQue=null&utm_campaign=zbw_br_natip_usa_ht_nat_x_e_g_1&gad_source=1&gad_campaignid=12581678795&gbraid=0AAAAADhq15cqT2Y48ufrLlMHkJm1FfauH&gclid=Cj0KCQjw8p7GBhCjARIsAEhghZ3A-RXTT7_UBLkEWdvz61nKttphjHYdaWMybt3g4INvwm5y37gU81AaAo2-EALw_wcB&searchQueryState=%7B%22isMapVisible%22%3Atrue%2C%22mapBounds%22%3A%7B%22north%22%3A37.32274239505959%2C%22south%22%3A37.28280238778021%2C%22east%22%3A-121.76896561346435%2C%22west%22%3A-121.84664238653563%7D%2C%22filterState%22%3A%7B%22sort%22%3A%7B%22value%22%3A%22globalrelevanceex%22%7D%7D%2C%22isListVisible%22%3Atrue%2C%22mapZoom%22%3A15%2C%22usersSearchTerm%22%3A%2295121%22%2C%22regionSelection%22%3A%5B%7B%22regionId%22%3A97989%2C%22regionType%22%3A7%7D%5D%7D\n",
+        "#https://www.zillow.com/santa-clara-ca-95050/?utm_medium=cpc&utm_source=google&utm_content=12581678795|124921362372|kwd-298676009707|507901519868|&semQue=null&utm_campaign=zbw_br_natip_usa_ht_nat_x_e_g_1&gad_source=1&gad_campaignid=12581678795&gbraid=0AAAAADhq15cqT2Y48ufrLlMHkJm1FfauH&gclid=Cj0KCQjw8p7GBhCjARIsAEhghZ3A-RXTT7_UBLkEWdvz61nKttphjHYdaWMybt3g4INvwm5y37gU81AaAo2-EALw_wcB&searchQueryState=%7B%22isMapVisible%22%3Atrue%2C%22mapBounds%22%3A%7B%22north%22%3A37.388685222498914%2C%22south%22%3A37.308922369463005%2C%22east%22%3A-121.91119194415283%2C%22west%22%3A-121.98869705584717%7D%2C%22filterState%22%3A%7B%22sort%22%3A%7B%22value%22%3A%22globalrelevanceex%22%7D%7D%2C%22isListVisible%22%3Atrue%2C%22mapZoom%22%3A14%2C%22usersSearchTerm%22%3A%2295050%22%2C%22regionSelection%22%3A%5B%7B%22regionId%22%3A97951%2C%22regionType%22%3A7%7D%5D%7D\n",
+        "#https://www.zillow.com/fremont-ca-94536/?utm_medium=cpc&utm_source=google&utm_content=12581678795|124921362372|kwd-298676009707|507901519868|&semQue=null&utm_campaign=zbw_br_natip_usa_ht_nat_x_e_g_1&gad_source=1&gad_campaignid=12581678795&gbraid=0AAAAADhq15cqT2Y48ufrLlMHkJm1FfauH&gclid=Cj0KCQjw8p7GBhCjARIsAEhghZ3A-RXTT7_UBLkEWdvz61nKttphjHYdaWMybt3g4INvwm5y37gU81AaAo2-EALw_wcB&searchQueryState=%7B%22isMapVisible%22%3Atrue%2C%22mapBounds%22%3A%7B%22north%22%3A37.646696191695504%2C%22south%22%3A37.48763569817559%2C%22east%22%3A-121.90813988830566%2C%22west%22%3A-122.06315011169433%7D%2C%22filterState%22%3A%7B%22sort%22%3A%7B%22value%22%3A%22globalrelevanceex%22%7D%7D%2C%22isListVisible%22%3Atrue%2C%22mapZoom%22%3A13%2C%22usersSearchTerm%22%3A%2294536%22%2C%22regionSelection%22%3A%5B%7B%22regionId%22%3A97743%2C%22regionType%22%3A7%7D%5D%7D\n",
+        "data = {\n",
+        "'square_footage': [1234, 1044, 1327, 1648, 1296, 1700, 1430, 2766, 1575, 1467,936,2240],\n",
+        "'location': [95050, 95050, 95050, 95050, 95121, 95121,\n",
+        "95121, 95121, 94536, 94536, 94536, 94536],\n",
+        "'price': [1748000, 1688888, 1288000, 1798000, 1235000, 999999, 2488000, 340000,\n",
+        "1298000, 1598000, 450000,1799000]\n",
+        "}\n",
+        "df = pd.DataFrame(data)\n",
+        "\n",
+        "X = df[['square_footage', 'location']]\n",
+        "y = df['price']\n",
+        "\n",
+        "preprocessor = ColumnTransformer(\n",
+        "transformers=[\n",
+        "('location', OneHotEncoder(sparse_output=False), ['location'])\n",
+        "], remainder='passthrough')\n",
+        "\n",
+        "model = Pipeline(steps=[\n",
+        "('preprocessor', preprocessor),\n",
+        "('regressor', LinearRegression())\n",
+        "])\n",
+        "\n",
+        "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,\n",
+        "random_state=42)\n",
+        "\n",
+        "\n",
+        "\n",
+        "model.fit(X_train, y_train)\n",
+        "\n",
+        "new_house = pd.DataFrame({'square_footage': [1655], 'location': [95121]})\n",
+        "predicted_price = model.predict(new_house)\n",
+        "print(f\"Predicted price for a 1,655 sq ft house in the zipcode location 95121: ${predicted_price[0]:,.2f}\")\n",
+        "\n",
+        "feature_names = (model.named_steps['preprocessor']\n",
+        ".named_transformers_['location']\n",
+        ".get_feature_names_out(['location'])).tolist() + \\\n",
+        "['square_footage']\n",
+        "coefficients = model.named_steps['regressor'].coef_\n",
+        "print(\"\\nModel Coefficients:\")\n",
+        "for feature, coef in zip(feature_names, coefficients):\n",
+        "    print(f\"{feature}: {coef:.2f}\")"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.linear_model import LogisticRegression\n",
+        "from sklearn.preprocessing import StandardScaler, OneHotEncoder\n",
+        "from sklearn.compose import ColumnTransformer\n",
+        "from sklearn.pipeline import Pipeline\n",
+        "#Source is from an educated guess of the busines world, since I couldn't find a realistic dataset\n",
+        "\n",
+        "data = {\n",
+        "'age': [40, 84, 18, 28, 72, 56, 21, 22, 61, 35],\n",
+        "'monthly_usage_hours': [15, 66, 58, 78, 88, 10, 34, 42, 50, 42],\n",
+        "'purchase_amount': [300, 220, 100, 90, 250, 190, 145, 90, 200, 50],\n",
+        "'customer_service_calls': [2, 3, 8, 5, 2, 3, 9, 3, 0, 1],\n",
+        "'region': ['North', 'South', 'West', 'East', 'South', 'North', 'West', 'East',\n",
+        "'South', 'North'],\n",
+        "'churn': [0, 0, 1, 1, 1, 1 ,0, 1, 0, 0] # 1 = churned, 0 = not churned\n",
+        "}\n",
+        "df = pd.DataFrame(data)\n",
+        "\n",
+        "X = df[['age', 'monthly_usage_hours', 'purchase_amount', 'customer_service_calls',\n",
+        "'region']]\n",
+        "y = df['churn']\n",
+        "\n",
+        "preprocessor = ColumnTransformer(\n",
+        "transformers=[\n",
+        "('num', StandardScaler(), ['age', 'monthly_usage_hours', 'purchase_amount',\n",
+        "'customer_service_calls']),\n",
+        "('cat', OneHotEncoder(sparse_output=False), ['region'])\n",
+        "])\n",
+        "\n",
+        "model = Pipeline(steps=[\n",
+        "('preprocessor', preprocessor),\n",
+        "('classifier', LogisticRegression(random_state=42))\n",
+        "])\n",
+        "\n",
+        "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,\n",
+        "random_state=42)\n",
+        "\n",
+        "model.fit(X_train, y_train)\n",
+        "\n",
+        "new_customer = pd.DataFrame({\n",
+        "'age': [35],\n",
+        "'monthly_usage_hours': [20],\n",
+        "'purchase_amount': [150],\n",
+        "'customer_service_calls': [5],\n",
+        "'region': ['West']\n",
+        "})\n",
+        "churn_probability = model.predict_proba(new_customer)[0][1]\n",
+        "\n",
+        "threshold = 0.5\n",
+        "churn_prediction = 1 if churn_probability > threshold else 0\n",
+        "print(f\"Churn Probability for new customer: {churn_probability:.2f}\")\n",
+        "print(f\"Churn Prediction (1 = churn, 0 = no churn): {churn_prediction}\")\n",
+        "\n",
+        "feature_names = (model.named_steps['preprocessor']\n",
+        ".named_transformers_['cat']\n",
+        ".get_feature_names_out(['region'])).tolist() + ['age',\n",
+        "'monthly_usage_hours', 'purchase_amount', 'customer_service_calls']\n",
+        "coefficients = model.named_steps['classifier'].coef_[0]\n",
+        "print(\"\\nModel Coefficients:\")\n",
+        "for feature, coef in zip(feature_names, coefficients):\n",
+        "    print(f\"{feature}: {coef:.2f}\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "RsfKpkXJmGTe",
+        "outputId": "3436b075-cd9a-4784-d7a0-529f3621d7ec"
+      },
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Churn Probability for new customer: 0.50\n",
+            "Churn Prediction (1 = churn, 0 = no churn): 1\n",
+            "\n",
+            "Model Coefficients:\n",
+            "region_East: 0.47\n",
+            "region_North: 0.51\n",
+            "region_South: -0.15\n",
+            "region_West: 0.12\n",
+            "age: 0.47\n",
+            "monthly_usage_hours: -0.40\n",
+            "purchase_amount: 0.09\n",
+            "customer_service_calls: -0.16\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "from sklearn.cluster import KMeans\n",
+        "from sklearn.preprocessing import StandardScaler\n",
+        "import matplotlib.pyplot as plt\n",
+        "\n",
+        "#I couldn't find a source so I used chatgpt to provide me a realistic dataset with the provided columns\n",
+        "#https://chatgpt.com/\n",
+        "\n",
+        "data = {\n",
+        "'annual_spending': [1200, 4500, 3800, 5200, 6500, 2700, 8300, 5900, 2900, 4200],\n",
+        "'purchase_frequency': [8, 15, 12, 20, 10, 5, 18, 22, 7, 14],\n",
+        "'age': [22, 35, 47, 29, 54, 41, 63, 30, 50, 38],\n",
+        "'region': ['East', 'West', 'North', 'South', 'East', 'West', 'NOrth', 'South',\n",
+        "'East', 'West']\n",
+        "}\n",
+        "df = pd.DataFrame(data)\n",
+        "\n",
+        "features = ['annual_spending', 'purchase_frequency', 'age']\n",
+        "X = df[features]\n",
+        "scaler = StandardScaler()\n",
+        "X_scaled = scaler.fit_transform(X)\n",
+        "\n",
+        "inertia = []\n",
+        "K = range(1, 6)\n",
+        "for k in K:\n",
+        "    kmeans = KMeans(n_clusters=k, random_state=42)\n",
+        "    kmeans.fit(X_scaled)\n",
+        "    inertia.append(kmeans.inertia_)\n",
+        "\n",
+        "plt.figure(figsize=(8, 5))\n",
+        "plt.plot(K, inertia, 'bo-')\n",
+        "plt.xlabel('Number of Clusters (K)')\n",
+        "plt.ylabel('Inertia')\n",
+        "plt.title('Elbow Method for Optimal K')\n",
+        "plt.savefig('elbow_plot.png')\n",
+        "plt.close()\n",
+        "\n",
+        "optimal_k = 3\n",
+        "kmeans = KMeans(n_clusters=optimal_k, random_state=42)\n",
+        "df['cluster'] = kmeans.fit_predict(X_scaled)\n",
+        "\n",
+        "cluster_summary = df.groupby('cluster')[features].mean().round(2)\n",
+        "print(\"Cluster Characteristics:\")\n",
+        "print(cluster_summary)\n",
+        "\n",
+        "for cluster in range(optimal_k):\n",
+        "    print(f\"\\nCluster {cluster} Strategy:\")\n",
+        "    if cluster_summary.loc[cluster, 'annual_spending'] > 1000:\n",
+        "        print(\"High-spending customers: Offer exclusive promotions or loyalty rewards.\")\n",
+        "    elif cluster_summary.loc[cluster, 'purchase_frequency'] > 10:\n",
+        "        print(\"Frequent buyers: Provide bulk discounts or subscription plans.\")\n",
+        "    else:\n",
+        "        print(\"Low-engagement customers: Send personalized re-engagement campaigns.\")\n",
+        "\n",
+        "df.to_csv('customer_segments.csv', index=False)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "T7-YBLXwoPZ3",
+        "outputId": "d89358df-fdfb-49da-cc21-6a8f19129b4c"
+      },
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Cluster Characteristics:\n",
+            "         annual_spending  purchase_frequency   age\n",
+            "cluster                                           \n",
+            "0                 5620.0                17.8  39.0\n",
+            "1                 3975.0                 8.5  48.0\n",
+            "2                 1200.0                 8.0  22.0\n",
+            "\n",
+            "Cluster 0 Strategy:\n",
+            "High-spending customers: Offer exclusive promotions or loyalty rewards.\n",
+            "\n",
+            "Cluster 1 Strategy:\n",
+            "High-spending customers: Offer exclusive promotions or loyalty rewards.\n",
+            "\n",
+            "Cluster 2 Strategy:\n",
+            "High-spending customers: Offer exclusive promotions or loyalty rewards.\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
